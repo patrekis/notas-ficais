@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prévia de atendimento — demonstração</title>
+  <style>
+    :root{font-family:system-ui,sans-serif;color:#192b35;background:#f2f5f4}*{box-sizing:border-box}body{margin:0}header{background:#173b3e;color:white;padding:22px max(24px,calc((100% - 1040px)/2))}header strong{font-size:1.15rem}header p{margin:5px 0 0;color:#d1e6df;font-size:.9rem}main{max-width:1040px;margin:30px auto;padding:0 20px}.notice{background:#fff4d9;border:1px solid #ecd49b;border-radius:12px;padding:16px 19px;color:#594414;font-size:.93rem}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}.card{background:white;border:1px solid #dae4e0;border-radius:16px;padding:26px;box-shadow:0 4px 16px #152d2b0a}h1{font-size:1.65rem;margin:24px 0 8px}h2{font-size:1.2rem;margin:0 0 6px}.muted{color:#5e7075;font-size:.9rem;line-height:1.5}label{display:block;font-size:.88rem;font-weight:600;margin:18px 0 7px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;border:1px solid #b8c9c4;border-radius:8px;padding:11px;color:#192b35;background:white}textarea{resize:vertical;min-height:85px}button{margin-top:22px;border:0;border-radius:8px;background:#176a57;color:white;padding:12px 18px;font-weight:650;cursor:pointer}button:hover{background:#105644}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #e4ac3e;outline-offset:2px}.badge{display:inline-block;border-radius:20px;background:#e9f3ef;color:#17614e;padding:6px 10px;font-size:.78rem;font-weight:700}.row{border-bottom:1px solid #e7eeeb;padding:13px 0}.row dt{color:#63777a;font-size:.78rem}.row dd{margin:4px 0 0;overflow-wrap:anywhere}.empty{color:#687c7b;font-size:.95rem}.result{margin-top:20px}.footer{color:#627673;font-size:.83rem;margin:24px 0;line-height:1.5}@media(max-width:720px){.grid{grid-template-columns:1fr}main{margin:20px auto}.card{padding:20px}}
+  </style>
+</head>
+<body>
+  <header><strong>Organização de atendimentos</strong><p>Estudo de fluxo · demonstração local</p></header>
+  <main>
+    <div class="notice"><strong>Demonstração com dados fictícios.</strong> Não emite nota, não acessa o governo e não salva dados. Não use informações reais de clientes.</div>
+    <h1>Preparar dados para conferência</h1>
+    <p class="muted">Uma ideia inicial de como organizar as informações recebidas por mensagem.</p>
+    <div class="grid">
+      <section class="card"><h2>Dados do atendimento</h2><p class="muted">Os campos são exemplos e ainda serão confirmados com o cliente e o contador.</p>
+        <form id="form">
+          <label for="tipo">Pessoa atendida</label><select id="tipo"><option>Pessoa física</option><option>Pessoa jurídica</option></select>
+          <label for="nome">Nome ou razão social</label><input id="nome" value="Cliente de Exemplo" required maxlength="120">
+          <label for="referencia">Referência da solicitação</label><input id="referencia" value="EXEMPLO-001" required maxlength="80">
+          <label for="descricao">Descrição da operação</label><textarea id="descricao" required maxlength="500">Serviço de exemplo, sujeito à definição pelo contador.</textarea>
+          <label for="valor">Valor informado (R$)</label><input id="valor" type="number" min="0.01" step="0.01" value="150.00" required>
+          <button type="submit">Conferir dados</button>
+        </form>
+      </section>
+      <section class="card" aria-live="polite"><span class="badge">Prévia demonstrativa</span><h2 style="margin-top:14px">Confira as informações</h2><p class="muted">O valor e a descrição não definem o enquadramento fiscal.</p>
+        <p id="vazio" class="empty">Preencha os dados e selecione “Conferir dados”.</p>
+        <dl id="resultado" class="result" hidden></dl>
+      </section>
+    </div>
+    <section class="card" style="margin-top:22px" aria-labelledby="titulo-importacao">
+      <h2 id="titulo-importacao">Conferir uma planilha de exemplo</h2>
+      <p class="muted">Baixe o <a href="modelo-exemplo.csv" download>modelo fictício em CSV</a> e selecione-o abaixo. O arquivo deve usar ponto e vírgula como separador e codificação UTF-8. Não insira dados reais.</p>
+      <label for="arquivo">Arquivo CSV</label><input id="arquivo" type="file" accept=".csv,text/csv">
+      <div id="resumo-importacao" role="status" class="muted" style="margin-top:16px">Nenhum arquivo selecionado.</div>
+      <div id="lista-importacao"></div>
+    </section>
+    <p class="footer">Esta tela serve para conversar sobre o fluxo. Os dados desaparecem ao fechar ou atualizar a página. A emissão, os campos obrigatórios e o armazenamento dependem de validação.</p>
+  </main>
+  <script src="importacao.js"></script>
+  <script>
+    const form=document.getElementById('form');
+    form.addEventListener('submit',event=>{
+      event.preventDefault();
+      const campos=[['Pessoa atendida',document.getElementById('tipo').value],['Nome ou razão social',document.getElementById('nome').value.trim()],['Referência da solicitação',document.getElementById('referencia').value.trim()],['Descrição da operação',document.getElementById('descricao').value.trim()],['Valor informado',Number(document.getElementById('valor').value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})]];
+      const resultado=document.getElementById('resultado'); resultado.replaceChildren();
+      for(const [rotulo,valor] of campos){const div=document.createElement('div');div.className='row';const dt=document.createElement('dt');dt.textContent=rotulo;const dd=document.createElement('dd');dd.textContent=valor;div.append(dt,dd);resultado.append(div)}
+      document.getElementById('vazio').hidden=true;resultado.hidden=false;
+    });
+    const arquivo = document.getElementById('arquivo');
+    const resumo = document.getElementById('resumo-importacao');
+    const lista = document.getElementById('lista-importacao');
+    let leituraAtual = 0;
+    arquivo.addEventListener('change', async () => {
+      const leitura = ++leituraAtual;
+      lista.replaceChildren();
+      const selecionado = arquivo.files[0];
+      if (!selecionado) { resumo.textContent = 'Nenhum arquivo selecionado.'; return; }
+      if (selecionado.size > 1024 * 1024) { resumo.textContent = 'Arquivo acima de 1 MB. Use um exemplo menor.'; return; }
+      resumo.textContent = 'Lendo arquivo...';
+      try {
+        const texto = await selecionado.text();
+        if (leitura !== leituraAtual) return;
+        const resultado = importarSolicitacoes(texto);
+        if (resultado.erro) { resumo.textContent = resultado.erro; return; }
+        const pendentes = resultado.linhas.filter(l => l.problemas.length).length;
+        resumo.textContent = `${resultado.linhas.length} solicitação(ões) · ${pendentes} com dados para revisar. A verificação de repetição considera apenas este arquivo.`;
+        for (const linha of resultado.linhas) {
+          const bloco = document.createElement('div'); bloco.className = 'row';
+          const titulo = document.createElement('strong'); titulo.textContent = `Linha ${linha.numero} · ${linha.referencia || 'Sem referência'} · ${linha.problemas.length ? 'Revisar dados' : 'Pronta para conferência'}`;
+          const detalhe = document.createElement('p'); detalhe.className = 'muted';
+          detalhe.textContent = `${linha.tipo || 'Tipo não informado'} · ${linha.nome || 'Nome não informado'} · ${linha.descricao || 'Descrição não informada'} · ${(linha.valor / 100).toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}`;
+          bloco.append(titulo, detalhe);
+          if (linha.problemas.length) { const aviso = document.createElement('p'); aviso.textContent = linha.problemas.join(' · '); bloco.append(aviso); }
+          lista.append(bloco);
+        }
+      } catch { if (leitura === leituraAtual) resumo.textContent = 'Não foi possível ler o arquivo.'; }
+    });
+  </script>
+</body>
+</html>
